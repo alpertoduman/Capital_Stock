@@ -1,0 +1,59 @@
+---
+title: "Sermaye PWT10"
+author: "Alper Duman"
+date: "4/26/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+[Penn World Table](https://www.rug.nl/ggdc/productivity/pwt/) verilerini kullanarak Türkiye'deki sermaye stoğu hakkında bilgi sahibi olmaya çalışacağız. 
+
+Bunun için R'da *rmarkdown* adlı kütüphane yazarken gerekli işlemleri de interaktif olarak bu yazı içinde yapmamızı sağlayacak. Verileri işlemek için -şimdilik- iki kütüphane olacak: *pwt10* ve *tidyverse*. Tüm kütüphaneleri *Rstudio* dan kurabilirsiniz. R ve Rstudio ile ilgili tanıtıcı blog yazısını daha ileri bir tarihe bırakıyorum. 
+
+Aşağıdaki gibi bir kod bloku açıyoruz ve bu kütüphaneleri kullanım için hazır hale getiriyoruz.
+
+```{r libs, include=TRUE, echo=TRUE, warning=FALSE}
+library(pwt10)
+library(tidyverse)
+```
+
+Kütüphanelerden *pwt10* verisetini hazır olarak sunuyor. Biz buradan sadece Türkiye verilerini alacağız. Bunun için yeni bir kod bloku açarak işlemlerimizi yapıyoruz.
+
+```{r TRpwt, include=TRUE, echo=TRUE, warning=FALSE}
+ data("pwt10.0") 
+ data = force(pwt10.0)
+ TR = data[data$country=="Turkey",]
+ TR %>% select(rgdpo, emp) %>% head()
+```
+
+Önce veriyi çağırdık. Kütüphane verisini kullanılmaya zorladık. Üçüncü komut ile Türkiye verilerini seçtik.Dördüncü komut *tidyverse* kütüphanesinin zincir (pipe) kısayolu olan "%>%" ifadesini içeriyor. Baştaki verisetini komutların içine yeniden yazmak gerekmiyor böylece. "rgdpo" 2017 yılı dolar fiyatlarıyla reel GSYH'yı "emp" ise toplam istihdamı gösteriyor.
+
+Verilere başarıyla ulaştığımıza göre artık sermaye stok değişkenlerine odaklanabiliriz. 
+
+* cn Capital stock at current PPPs (in million 2017 USD).
+* ck Capital services levels at current PPPs (USA = 1)
+* rnna Capital stock at constant 2017 national prices (in million 2017 USD).
+* rkna Capital services at constant 2017 national prices (2017 = 1)
+* irr Real internal rate of return.
+* delta Average depreciation rate of the capital stock.
+
+İlk grafik "rnna" yani saibit 2017 dolar fiyatlarıyla reel sermaye stok verisinin gelişimi olacak. 
+Bunun için yine bir kod bloku açalım ve *ggplot* komutundan yararlanalım. Sermaye stok değişkeninin logaritmasını alarak çizdirince eğim bize büyüme hızını veriyor. Bu da bize sermaye birikiminde büyük kırılmalar olup olmadığını daha rahat görme imkanı veriyor.
+
+```{r rnnaPLOT, include=TRUE, echo=TRUE, warning=FALSE}
+ ggplot(TR, aes(x=year, y=log(rnna))) + geom_line() + labs( title="Reel Sermaye Stok (Logaritmik)", x="", y="") + theme_bw() 
+```
+
+Görüldüğü gibi reel değerlerle sermaye birikimi 1960'lardan beri neredeyse aynı trend üzerinden ilerliyor. 
+
+İkinci grafik satınalma gücü paritesine göre cari 2017 dolar fiyatlarıyla sermaye stoğunun yıllar içindeki değişimi olacak. 
+
+```{r cnPLOT, include=TRUE, echo=TRUE, warning=FALSE}
+ ggplot(TR, aes(x=year, y=log(cn))) + geom_line() + labs( title="Nominal Sermaye Stok (Logaritmik)", x="", y="") + theme_bw()
+```
+
+Bu grafikte 1980 ve 1990'ların sermaye birikiminde (göreli fiyat hareketleri ve döviz kuru etkileriyle birlikte) performans kaybı olan onyıllar olduğu görülüyor.
