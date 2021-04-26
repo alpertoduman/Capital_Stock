@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Türkiye'de Durum
 
 [Penn World Table](https://www.rug.nl/ggdc/productivity/pwt/) verilerini kullanarak Türkiye'deki sermaye stoğu hakkında bilgi sahibi olmaya çalışacağız. 
 
@@ -45,15 +46,55 @@ Verilere başarıyla ulaştığımıza göre artık sermaye stok değişkenlerin
 Bunun için yine bir kod bloku açalım ve *ggplot* komutundan yararlanalım. Sermaye stok değişkeninin logaritmasını alarak çizdirince eğim bize büyüme hızını veriyor. Bu da bize sermaye birikiminde büyük kırılmalar olup olmadığını daha rahat görme imkanı veriyor.
 
 ```{r rnnaPLOT, include=TRUE, echo=TRUE, warning=FALSE}
- ggplot(TR, aes(x=year, y=log(rnna))) + geom_line() + labs( title="Reel Sermaye Stok (Logaritmik)", x="", y="") + theme_bw() 
+ ggplot(TR, aes(x=year, y=log(rnna))) + geom_line() + 
+        stat_smooth(method="lm", formula = y ~ x, color="red", ,size=0.5,data = TR[TR$year<1980, ]) +
+        stat_smooth(method="lm", formula = y ~ x, color="green", size=0.5, data = TR[TR$year>1980,] ) +
+        labs( title="Reel Sermaye Stok (Logaritmik)", x="", y="") + theme_bw() 
 ```
 
-Görüldüğü gibi reel değerlerle sermaye birikimi 1960'lardan beri neredeyse aynı trend üzerinden ilerliyor. 
+
+
+
+Görüldüğü gibi reel değerlerle sermaye birikimi 1960'lardan beri neredeyse aynı trend üzerinden ilerliyor gibi gözükse de aslında 1980 sonrası trendinde eğim hafif de olsa düşmüştür. Eğim farklarını kırmızı ve yeşil trend çizgilerinden çıkarabiliriz. 
 
 İkinci grafik satınalma gücü paritesine göre cari 2017 dolar fiyatlarıyla sermaye stoğunun yıllar içindeki değişimi olacak. 
 
 ```{r cnPLOT, include=TRUE, echo=TRUE, warning=FALSE}
- ggplot(TR, aes(x=year, y=log(cn))) + geom_line() + labs( title="Nominal Sermaye Stok (Logaritmik)", x="", y="") + theme_bw()
+ ggplot(TR, aes(x=year, y=log(cn))) + geom_line() + 
+        labs( title="Nominal Sermaye Stok (Logaritmik)", x="", y="") + theme_bw()
 ```
 
 Bu grafikte 1980 ve 1990'ların sermaye birikiminde (göreli fiyat hareketleri ve döviz kuru etkileriyle birlikte) performans kaybı olan onyıllar olduğu görülüyor.
+
+## Başka Ülkelerle Karşılaştırma
+
+Güney Kore ve Almanya'yı karşılaştırmak için seçiyoruz. 
+
+```{r TRDEUKORpwt, include=TRUE, echo=TRUE, warning=FALSE}
+ data("pwt10.0") 
+ data = force(pwt10.0)
+ TRDEUKOR = data %>% filter(isocode %in% c("TUR", "KOR", "DEU"))
+ TRDEUKOR %>% select(rgdpo, emp) %>% head()
+```
+
+Verisetini oluşturabidik sanırım. Şimdi üç ülke için reel sermaye stok verisinin seyrini grafik haline getiriyoruz. 
+
+```{r rnnaTRGERKORplot, include=TRUE, echo=TRUE, warning=FALSE}
+TRDEUKOR %>% 
+     ggplot(aes(x=year, y=log(rnna), group=country, color=country)) + geom_line()  +
+    labs( title="Reel Sermaye Stok (Logaritmik)", x="", y="") + theme_bw()          
+```
+
+Almanya doğal olarak en yukarıda. İlginç olan Güney Kore'de sermaye stoğunun Türkiye'yi 1980'lerin ortasında yakalayıp geçmiş olması. Nüfus olarak da toplam GSYH olrak da 1980'lerde Türkiye çok daha büyüktü Güney Kore'den. 
+
+Son olarak "irr" sermayenin içsel getiri oranlarını karşılaştıralım.
+
+```{r irrTRGERKORplot, include=TRUE, echo=TRUE, warning=FALSE}
+TRDEUKOR %>% 
+     ggplot(aes(x=year, y=irr, group=country, color=country)) + geom_line()  +
+    labs( title="Sermaye Getirisi", x="", y="") + theme_bw()          
+```
+
+İşte büyük bilmece (puzzle) burada karşımıza çıkıyor. Eğer sermaye getirisi Türkiye'de en yüksekse neden sermaye sahipleri (kapitalistler) sermaye birikimini yeterince artırmıyorlar? 
+
+Bu sorunun yanıtını bilimsel olarak verebilen doktora tez derecesini alabilir benden :)
