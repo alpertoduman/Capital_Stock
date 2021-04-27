@@ -17,12 +17,13 @@ Bunun için R'da *rmarkdown* adlı kütüphane yazarken gerekli işlemleri de in
 
 Aşağıdaki gibi bir kod bloku açıyoruz ve bu kütüphaneleri kullanım için hazır hale getiriyoruz.
 
-```{r libs, include=TRUE, echo=TRUE, warning=FALSE}
+```{r libs, include=FALSE, echo=TRUE, warning=FALSE}
 library(pwt10)
 library(tidyverse)
+library(kableExtra)
 ```
 
-Kütüphanelerden *pwt10* verisetini hazır olarak sunuyor. Biz buradan sadece Türkiye verilerini alacağız. Bunun için yeni bir kod bloku açarak işlemlerimizi yapıyoruz.
+Kütüphanelerden *pwt10* verisetini hazır olarak sunuyor. Biz buradan ilk önce sadece Türkiye verilerini alacağız. Bunun için yeni bir kod bloku açarak işlemlerimizi yapıyoruz.
 
 ```{r TRpwt, include=TRUE, echo=TRUE, warning=FALSE}
  data("pwt10.0") 
@@ -35,15 +36,15 @@ Kütüphanelerden *pwt10* verisetini hazır olarak sunuyor. Biz buradan sadece T
 
 Verilere başarıyla ulaştığımıza göre artık sermaye stok değişkenlerine odaklanabiliriz. 
 
-* cn Capital stock at current PPPs (in million 2017 USD).
-* ck Capital services levels at current PPPs (USA = 1)
-* rnna Capital stock at constant 2017 national prices (in million 2017 USD).
-* rkna Capital services at constant 2017 national prices (2017 = 1)
-* irr Real internal rate of return.
-* delta Average depreciation rate of the capital stock.
+* cn : Satınalma paritesiyle cari sermaye stoğu (2017 ABD milyon dolar) [Capital stock at current PPPs (in million 2017 USD)].
+* ck :  Satınalma paritesiyle sermaye kullanım Endeksi  (ABD=1) [Capital services levels at current PPPs (USA = 1)]
+* rnna : Sabit fiyatlarla reel sermaye stoğu (2017 ABD milyon dolar) [Capital stock at constant 2017 national prices (in million 2017 USD)}
+* rkna : Sabit fiyatlarla reel sermaye kullanım endeksi (2017=1) [Capital services at constant 2017 national prices (2017 = 1)]
+* irr : Sermayenin reel içsel getirisi [Real internal rate of return]
+* delta : Sermaye stoğunun ortalama yıpranma oranı [Average depreciation rate of the capital stock]
 
-İlk grafik "rnna" yani saibit 2017 dolar fiyatlarıyla reel sermaye stok verisinin gelişimi olacak. 
-Bunun için yine bir kod bloku açalım ve *ggplot* komutundan yararlanalım. Sermaye stok değişkeninin logaritmasını alarak çizdirince eğim bize büyüme hızını veriyor. Bu da bize sermaye birikiminde büyük kırılmalar olup olmadığını daha rahat görme imkanı veriyor.
+İlk grafik "rnna" yani sabit 2017 dolar fiyatlarıyla reel sermaye stok verisinin gelişimi olacak. 
+Bunun için yine bir kod bloku açalım ve *tidyverse* kütüphanesinden *ggplot* komutundan yararlanalım. Grafiği sermaye stok değişkeninin logaritmasını alarak çizdirince eğim bize büyüme hızını veriyor. Bu da bize sermaye birikiminde büyük kırılmalar olup olmadığını daha rahat görme imkanı veriyor.
 
 ```{r rnnaPLOT, include=TRUE, echo=TRUE, warning=FALSE}
  ggplot(TR, aes(x=year, y=log(rnna))) + geom_line() + 
@@ -55,7 +56,7 @@ Bunun için yine bir kod bloku açalım ve *ggplot* komutundan yararlanalım. Se
 
 
 
-Görüldüğü gibi reel değerlerle sermaye birikimi 1960'lardan beri neredeyse aynı trend üzerinden ilerliyor gibi gözükse de aslında 1980 sonrası trendinde eğim hafif de olsa düşmüştür. Eğim farklarını kırmızı ve yeşil trend çizgilerinden çıkarabiliriz. 
+Görüldüğü gibi reel değerlerle sermaye birikimi 1960'lardan beri neredeyse aynı trend üzerinden ilerliyor gibi gözükse de aslında 1980 sonrası trendinde eğim hafif de olsa düşmüştür. Eğim farklarını kırmızı ve yeşil trend çizgilerinden çıkarabiliriz. Neoliberal dönem sermaye birikim hızının da düştüğü bir dönemdir.
 
 İkinci grafik satınalma gücü paritesine göre cari 2017 dolar fiyatlarıyla sermaye stoğunun yıllar içindeki değişimi olacak. 
 
@@ -64,7 +65,7 @@ Görüldüğü gibi reel değerlerle sermaye birikimi 1960'lardan beri neredeyse
         labs( title="Nominal Sermaye Stok (Logaritmik)", x="", y="") + theme_bw()
 ```
 
-Bu grafikte 1980 ve 1990'ların sermaye birikiminde (göreli fiyat hareketleri ve döviz kuru etkileriyle birlikte) performans kaybı olan onyıllar olduğu görülüyor.
+Bu grafikte 1980 ve 1990'ların sermaye birikiminde (göreli fiyat hareketleri ve döviz kuru etkileriyle birlikte) performans kaybı olan onyıllar olduğu görülüyor. 2000 sonrası cari sermaye stok birikim hızı yine ivmelense de bu ivme istisnai değildir; 1980 öncesi trendine yakınsama sayılabilir.
 
 ## Başka Ülkelerle Karşılaştırma
 
@@ -85,9 +86,17 @@ TRDEUKOR %>%
     labs( title="Reel Sermaye Stok (Logaritmik)", x="", y="") + theme_bw()          
 ```
 
-Almanya doğal olarak en yukarıda. İlginç olan Güney Kore'de sermaye stoğunun Türkiye'yi 1980'lerin ortasında yakalayıp geçmiş olması. Nüfus olarak da toplam GSYH olrak da 1980'lerde Türkiye çok daha büyüktü Güney Kore'den. 
+Almanya doğal olarak en yukarıda. İlginç olan Güney Kore'de sermaye stoğunun Türkiye'yi 1980'lerin ortasında yakalayıp geçmiş olması. Nüfus olarak da toplam GSYH olrak da 1980'lerde Türkiye çok daha büyüktü Güney Kore'den. 1975, 1985  ve yıllırında GSYH ve çalışan sayılarını karşılaştıralım.
 
-Son olarak "irr" sermayenin içsel getiri oranlarını karşılaştıralım.
+```{r rgdpoempTURKOR, include=TRUE, echo=TRUE, warning=FALSE}
+TRDEUKOR %>% filter(isocode %in% c("TUR", "KOR")) %>% filter(year %in% c(1975,1985, 1995)) %>%
+    select(rgdpo,emp) 
+```
+
+Görüldüğü gibi Güney Kore sermaye birikimi sayesinde 20 yıl içinde GSYH'si Türkiye'nin yarısı kadar bir ekonomiden Türkiye'ye fark atar bir düzeye (Türkiye GSYH'nın 1.5 katından fazlası) gelmiş ve dahası çalışan sayısında da Türkiye'yi geçmiştir. 
+
+
+Son olarak "irr" sermayenin reel içsel getiri oranlarını karşılaştıralım.
 
 ```{r irrTRGERKORplot, include=TRUE, echo=TRUE, warning=FALSE}
 TRDEUKOR %>% 
